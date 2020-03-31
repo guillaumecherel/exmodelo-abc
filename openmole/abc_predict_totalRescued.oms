@@ -1,0 +1,21 @@
+import _file_.model._
+import _file_.environments._
+
+val weight = Val[Double]
+
+// Run the simulations from the csv sample
+val s = CSVSampling(workDirectory / "results/abc/rescuedDynamic/step872.csv") set (
+  columns += humanInformedRatio,
+  columns += humanInformProbability,
+  columns += humanFollowProbability,
+  columns += weight
+)
+
+val run = DirectSampling(
+  evaluation = model set (inputs += weight, outputs += weight)
+    hook CSVHook(workDirectory / "results/abc/posteriorPredictionTotalRescued.csv", 
+      values = Seq(totalRescued, weight)) ,
+  sampling = s
+)
+
+run on local.env

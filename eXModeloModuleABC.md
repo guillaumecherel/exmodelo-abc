@@ -31,13 +31,11 @@ $f_\texttt{humanInformProbability}: [0,1] \rightarrow \mathbb{R}_+$.
 
 It associates to each possible value a positive real value, the density, which describes how likely this value is relative to the others. A flat function gives all values the same density. It reflects that all value are believed equally likely. When the shape isn't flat, some values are more credible than others. A density value equal to 0 means that the associated parameter value are believed to be impossible.
 
-![](https://miniocodimd.openmole.org:443/codimd/uploads/upload_55ac496e17c2d9e8a18f67c1cc58ff7c.png)
-*Figure: Examples of density fonctions for a parameter $\theta$ taking values between 0 and 1.*
+![*Figure: Examples of density fonctions for a parameter $\theta$ taking values between 0 and 1.*](fig/belief_as_density.png){width=20cm}
 
 A high degree of confidence can be translated as a narrow distribution, peaked around the value on which we would put our bet. A lower degree of confidence would be associated to a wider distribution and a lower peak.
 
-![](https://miniocodimd.openmole.org:443/codimd/uploads/upload_be6dae83e100f9f7d085444e536510b8.png =66%x66%)
-*Figure: Examples of narrow and wide density functions.* 
+![*Figure: Examples of narrow and wide density functions.*](fig/belief_wide_narrow.png){width=13cm} 
 
 Such density functions will describe *prior* and *posterior* beliefs about the parameters, i.e. respectively beliefs we have about them before observing any data and beliefs updated with data and the model. We call them respectively *prior density* and *posterior density*. The former is generally constructed by hand to reflect our state of belief based on prior data or theoretical knowledge. The latter is the result of ABC. For example, the posterior density on the parameter `humanInformProbability` given a `proportionInfected` equal to $a$ will be denoted with a conditional density function like 
 
@@ -108,9 +106,9 @@ We have defined calibration as finding parameters values consistent with data. W
 
 ABC conveys uncertainty through a sample of values. It follows the posterior density distribution on the parameter given the data. This distribution represents how probable the different parameter values are, according to the data, the model, and the prior distribution.
  
-The posterior sample is composed of the sequence of parameter values $(\theta_i)_{i=1}^N$ and their associated weights $w_i$. For example, [this file](http://nextcloud.openmole.org/s/dimRFeFTtDg9Len) contains the result of ABC for the model coop, where the data is a sequence of number of people rescued every 20 seconds. Each row corresponds to one point in the sample. The columns `humanInformedRatio`, `humanInformProbability` and `humanFollowProbability` give the values for the corresponding parameters, and the column `weight` give the point's weight. 
+The posterior sample is composed of the sequence of parameter values $(\theta_i)_{i=1}^N$ and their associated weights $w_i$. For example, [this file](samples/step872.csv) contains the result of ABC for the model coop, where the data is a sequence of number of people rescued every 20 seconds. Each row corresponds to one point in the sample. The columns `humanInformedRatio`, `humanInformProbability` and `humanFollowProbability` give the values for the corresponding parameters, and the column `weight` give the point's weight. 
 
-The OpenMOLE task used to obtain this result is (see the [complete OpenMOLE script](https://gitlab.openmole.org/exmodelo/zombies/blob/master/openmole/cooperation/abc_practice_solution.oms)):
+The OpenMOLE task used to obtain this result is (see the [complete OpenMOLE script](openmole/abc_practice_solution.oms)):
 
 ```scala
 val abc =
@@ -141,7 +139,7 @@ We can estimate the posterior density from a sample using kernel density estimat
 
 $(0,5,14,42,36,9,5,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)$
 
-The R script generating the figures of this section is available [here](https://gitlab.openmole.org/exmodelo/zombies/blob/master/openmole/cooperation/reports/abc-report.Rmd). The data file containing the posterior sample is [here](https://nextcloud.openmole.org/s/dimRFeFTtDg9Len).
+The R script generating the figures of this section is available [here](report/abc-report.Rmd). The data file containing the posterior sample is [here](samples/step872.csv).
 
 The easiest way to develop intuition about data is through visualisation. Ideally, we would like to plot the posterior density as seen in section [Beliefs as a probability distribution](#Beliefs-as-a-probability-distribution).
 
@@ -149,8 +147,7 @@ Let's recall that the model coop has 3 parameters. Since each point in the param
 
 Here are the estimated marginal density of individual parameters:
 
-![](https://miniocodimd.openmole.org:443/codimd/uploads/upload_a7fe5fb5ec329a21531b7ae181983ffc.png)
-
+![](fig/kde_marginal_1.png){width=20cm}
 
 From these marginals we can say that:
 - Small values of the parameter `humanInformProbability` are more likely than large values. The most likely values are around 0.1.
@@ -159,8 +156,7 @@ From these marginals we can say that:
 
 While individual marginals give us some insight, they can hide information of interaction between parameters. Let's examine interactions of parameters 2 by 2:
 
-![](https://miniocodimd.openmole.org:443/codimd/uploads/upload_e11a995a3f6c9c3d5aa477ca405d75a6.png)
-
+![](fig/kde_marginal_2.png){width=20cm}
 
 These marginals of parameters taken 2 by 2 confirm our previous intuitions:
 - the parameter `humanFollowProbability` doesn't seem to influence how likely each other parameter is: it's value doesn't affect the marginal density of any of the other 2 parameters;
@@ -206,7 +202,7 @@ Similarly, the probability that `humanInformedRatio` was less than 0.5 is approx
 
 $\mathbb{P}(\textit{humanInformedRatio} < 0.5 | Y = y_0) \approx \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \textbf{1}_{[0,0.5]}(\textit{humanInformedRatio}_i)$
 
-**Practice:** We ran ABC with the settings used [previously](#Practice-Exploiting-ABC%E2%80%99s-output). Use the posterior sample in [this file](http://nextcloud.openmole.org/s/dimRFeFTtDg9Len) and your favorite scripting language to compute the ratio $\frac{\mathbb{P}(\textit{humanInformedRatio} > 0.5 | Y = y_0)}
+**Practice:** We ran ABC with the settings used [previously](#Practice-Exploiting-ABC%E2%80%99s-output). Use the posterior sample in [this file](samples/step872.csv) and your favorite scripting language to compute the ratio $\frac{\mathbb{P}(\textit{humanInformedRatio} > 0.5 | Y = y_0)}
 {\mathbb{P}(\textit{humanInformedRatio} < 0.5 | Y = y_0)}$.
 
 This ratio tells us how much more probable is the hypothesis that more than half the humans were informed that the alternative. What can you conclude about the hypothesis that at least half of the people were aware of the rescue zones?
@@ -223,7 +219,7 @@ $\mathbb{E}[\textit{totalRescued}|Y=y] = \sum_{i=1}^n \frac{w_i}{\sum_{j=1}^n w_
 
 Where $\textit{totalRescued}_i$ is the total number of people rescued for the simulation run corresponding to the $i$-th posterior sample point, and $w_i$ is the associated weight.
 
-**Practice:** [This file](http://nextcloud.openmole.org/s/8t3L2tYNkSaWzE9) contains the prediction  sample of the total number of rescues, obtained from the [posterior sample](http://nextcloud.openmole.org/s/dimRFeFTtDg9Len) used [previously](#Practice-Exploiting-ABC%E2%80%99s-output). It was obtained using [this OpenMOLE script](https://gitlab.openmole.org/exmodelo/zombies/blob/master/openmole/cooperation/abc_predict_totalRescued.oms). Compute the predicted 5-percentile and 95-percentile of the total number of people rescued. Based on the width of this interval, how confident are you to make a prediction?
+**Practice:** [This file](samples/posteriorPredictionTotalRescued.csv) contains the prediction  sample of the total number of rescues, obtained from the [posterior sample](samples/step872.csv) used [previously](#Practice-Exploiting-ABC%E2%80%99s-output). It was obtained using [this OpenMOLE script](openmole/abc_predict_totalRescued.oms). Compute the predicted 5-percentile and 95-percentile of the total number of people rescued. Based on the width of this interval, how confident are you to make a prediction?
 
 Does the observed data fall within the 90% prediction interval you just computed? This is called a posterior predictive check. Such tests are important. They consist in making sure that the observed data is sufficiently likely according to the inferred model. If not, then there may be a problem with the model or the inference.
 
@@ -246,48 +242,25 @@ Let's compare the estimated posterior marginal densities of each parameter from 
 
 **Total number of rescues:**
 
-<img src="https://miniocodimd.openmole.org:443/codimd/uploads/upload_df46f24f943d2b81c2c7e600fa206900.png" width=200>
-<img src="https://miniocodimd.openmole.org:443/codimd/uploads/upload_4eeac4d09880909345a84c924cb18900.png" width=200>
-<img src="https://miniocodimd.openmole.org:443/codimd/uploads/upload_a899c9188d58ff10b2b8257f7ff7488d.png" width=200>
+![](fig/kde_marginal_humanFollowProbability_totalRescued.png){width=6.5cm}
+![](fig/kde_marginal_humanInformedRatio_totalRescued.png){width=6.5cm}
+![](fig/kde_marginal_humanInformProbability_totalRescued.png){width=6.5cm}
+
 
 **Number of rescues every 20 seconds:**
 
-<img src="https://miniocodimd.openmole.org:443/codimd/uploads/upload_51573a5c9054fb2ad5e7da08a67a1341.png" width=200>
-<img src="https://miniocodimd.openmole.org:443/codimd/uploads/upload_98402fcdc526ca837072dfc5bf0f28b3.png" width=200>
-<img src="https://miniocodimd.openmole.org:443/codimd/uploads/upload_88b136b85795d820f539a4e489f22fbd.png" width=200>
+![](fig/kde_marginal_humanFollowProbability_rescuedDynamic_w20.png){width=6.5cm}
+![](fig/kde_marginal_humanInformedRatio_rescuedDynamic_w20.png){width=6.5cm}
+![](fig/kde_marginal_humanInformProbability_rescuedDynamic_w20.png){width=6.5cm}
 
 **Number of rescues every second:**
 
-<img src="https://miniocodimd.openmole.org:443/codimd/uploads/upload_3bb33c21e1ac5ee725d15fcb047cf1be.png" width=200>
-<img src="https://miniocodimd.openmole.org:443/codimd/uploads/upload_7a7b00703b2198554f970a8136d58aee.png" width=200>
-<img src="https://miniocodimd.openmole.org:443/codimd/uploads/upload_986dba8006db497bea4f3b0b74ddd102.png" width=200>
+![](fig/kde_marginal_humanFollowProbability_rescuedDynamic_w1.png){width=6.5cm}
+![](fig/kde_marginal_humanInformedRatio_rescuedDynamic_w1.png){width=6.5cm}
+![](fig/kde_marginal_humanInformProbability_rescuedDynamic_w1.png){width=6.5cm}
 
 There are notable differences between the estimated marginals. In the first row, the three marginals are almost flat, suggesting that the summary statistic is not sufficient for the parameters. The second and third rows differ in the peak of the marginal for the parameter `humanInformProbability`: it is located around 0.1 in the second row and close to 0 in the third. Without any knowledge about the expected density that we are trying to estimate, it is hard to know which one is the most accurate. 
 
 A strategy to evaluate the quality of the whole inference process is to use simulation to generate pairs of parameter values and output values, and compare the result of ABC on each output value to the corresponding parameter value. The observed data we used in the previous applications of ABC was actually generated by a simulation run using the value 0.09 for `humanInformProbability`. We are thus tempted to say that using the summary statistics in 20 dimensions gives better results than using the most detailed summary statistics in 500 dimensions.
 
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
-.
 
