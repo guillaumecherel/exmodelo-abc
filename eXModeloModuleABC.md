@@ -217,7 +217,7 @@ We can make predictions consistent with our inference's uncertainty using the po
 
 For example, the expected value of the predicted total number of people rescued during an attack according to the inferred model is approximated by
 
-$\mathbb{E}[\textit{totalRescued}|Y=y] = \sum_{i=1}^n \frac{w_i}{\sum_{j=1}^n w_i} \textit{totalRescued}_i$
+$\mathbb{E}[\textit{totalRescued}|Y=y] = \sum_{i=1}^n \frac{w_i}{\sum_{j=1}^n w_j} \textit{totalRescued}_i$
 
 Where $\textit{totalRescued}_i$ is the total number of people rescued for the simulation run corresponding to the $i$-th posterior sample point, and $w_i$ is the associated weight.
 
