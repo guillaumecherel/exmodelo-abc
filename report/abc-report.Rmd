@@ -1,0 +1,239 @@
+---
+title: "ABC output report."
+output_document: html_document
+params:
+  datafile: "samples/step872.csv"
+  input_variables: !r c("humanInformedRatio", "humanInformProbability", "humanFollowProbability")
+  prior_bounds: !r list(humanInformedRatio = c(0,1), humanInformProbability = c(0,1), humanFollowProbability = c(0,1))
+  bins: !r list(humanInformedRatio = 20, humanInformProbability = 20, humanFollowProbability = 20)
+  bandwidth: !r list(humanInformedRatio = 0.1, humanInformProbability = 0.1, humanFollowProbability = 0.1))
+---
+
+```{r}
+library(ks)
+library(igraph)
+# library(mvtnorm)
+library(tidyverse)
+# library(patchwork)
+```
+
+```{r}
+datafile <- params$datafile
+input_variables <- params$input_variables
+prior <- as_tibble(params$prior_bounds)
+dimension <- length(input_variables)
+bins <- as_tibble(params$bins)
+if(is.null(params$bandwidth)) {
+  h <- NULL
+} else {
+  h <- as_tibble(params$bandwidth)
+}
+```
+
+# Data
+
+```{r}
+post <- read_csv(datafile) %>% 
+  select_at(c(input_variables, "weight")) %>%
+  filter(weight > 0) %>%
+  mutate(weight = weight / sum(weight))
+
+thetas <- post %>% select_at(input_variables)
+weights <- post %>% select(weight)
+```
+
+# Kernel density estimate
+
+```{r}
+kde_bounded <- function(thetas, weights, bounds, bins=NULL, h=NULL, evalp = NULL) {
+  # KDE for compact support as described in 
+  # Bouezmarni and Rombouts 2010 NONPARAMETRIC DENSITY ESTIMATION FOR MULTIVARIATE BOUNDED DATA
+
+  if(!is.null(evalp) && is.null(h))
+    stop("kde_bounded: argument h cannot be null when evalp is provided.")
+  if(!is.null(evalp) && !is.null(bins))
+    stop("kde_bounded: argument bins is unused when evalp is provided.")
+
+
+  bounds_min <- slice(bounds, 1)
+  bounds_max <- slice(bounds, 2)
+
+  scale_unit <- function(x) {
+    as_tibble(pmap(list(xx = x, bmi = bounds_min, bma = bounds_max), 
+      function(xx, bmi, bma) (xx - bmi) / (bma - bmi)))
+  }
+
+  unscale <- function(x) {
+    as_tibble(pmap(list(xx = x, bmi = bounds_min, bma = bounds_max),
+      function(xx, bmi, bma) xx * (bma - bmi) + bmi))
+  }
+  
+  thetas_u <- scale_unit(thetas)
+   
+  if (is.vector(weights) && length(weights) == 1) 
+    weights <- tibble(weight=1) %>% slice(rep(1, nrow(thetas)))
+
+  weights <- deframe(weights / sum(weights))
+ 
+  thetas_min_u <- as_vector(thetas_u %>% summarize_all(min))
+  thetas_max_u <- as_vector(thetas_u %>% summarize_all(max))
+  thetas_range_u <- thetas_max_u - thetas_min_u
+
+  if(is.null(h)){
+    if(ncol(thetas) == 1){
+      h_u <- hpi(as_vector(thetas_u))
+    } else {
+      h_u <- diag(Hpi.diag(thetas_u))
+    }
+  } else {
+    h_u <- h / (bounds_max - bounds_min)
+  }
+
+  if (is.null(evalp)) {
+    grid_min_u <- as_tibble(pmap(list(t = thetas_min_u, h = h_u), function(t, h)
+      qbeta(0.01, t / h + 1, (1 - t) / h + 1)))
+    grid_max_u <- as_tibble(pmap(list(t = thetas_max_u, h = h_u), function(t, h)
+      qbeta(0.99, t / h + 1, (1 - t) / h + 1)))
+    grid_step_u <- (grid_max_u - grid_min_u) / bins
+
+    grid_borders_u <- pmap(list(from=grid_min_u,
+                                to=grid_max_u,
+                                by=grid_step_u), 
+                           seq)
+    
+    evalp_u <- as_tibble(expand.grid(grid_borders_u))
+  } else {
+    evalp_u <- scale_unit(evalp)
+  }
+  names(evalp_u) <- names(thetas)
+  
+  long_thetas_u <- thetas_u %>% mutate(sample_index=row_number()) %>% gather("variable", "sample_value", -sample_index)
+  long_evalp_u <- evalp_u %>% mutate(evalp_index=row_number()) %>% gather("variable", "evalp_value", -evalp_index)
+  long_h_u <- gather(h_u, "variable", "h_value")
+  fhat_u <- long_thetas_u %>% 
+    left_join(long_evalp_u, by="variable") %>% 
+    left_join(long_h_u, by="variable") %>%
+    mutate(param_alpha = evalp_value / h_value + 1,
+           param_beta = (1 - evalp_value) / h_value + 1,
+           density = dbeta(sample_value, param_alpha, param_beta)) %>%
+    group_by(evalp_index, sample_index) %>%
+    summarize(density=prod(density)) %>%
+    summarize(density=sum(density * weights))
+
+  # Volume autour de chaque point (dans l'espace d'origine). La longeur de la cellule j pour la dimension d est donnée par 
+  # min(grid_def$by[d] / 2, evalp[j,d] - grid_def$from[d]) + 
+  #   min(grid_def$by[d] / 2, grid_def$to[d] - evalp[j,d])
+  if(is.null(evalp)) {
+    grid_min <- unscale(grid_min_u)
+    grid_max <- unscale(grid_max_u)
+    grid_step <- (grid_max - grid_min) / bins
+    evalp <- unscale(evalp_u)
+    half_grid_step <- slice(grid_step / 2, rep(1,nrow(evalp)))
+    limit_below <- as_tibble(map2(evalp, grid_min, `-`))
+    limit_above <- as_tibble(map2(grid_max, evalp, `-`)) 
+    cond_below <- half_grid_step < limit_below
+    cond_above <- half_grid_step < limit_above
+    length_below <- (half_grid_step) * cond_below + limit_below * (!cond_below)
+    length_above <- (half_grid_step) * cond_above + limit_above * (!cond_above)
+    dimcell <- length_below + length_above
+    vcell <- reduce(dimcell, `*`)
+   } else {
+    vcell <- NA
+    grid_borders_u = NULL
+  }
+
+  # Scale the density to adapt to the original space, see "transformation of random variables".
+  fhat <- evalp %>% mutate(density = fhat_u$density / prod(bounds_max - bounds_min), vcell = vcell)
+
+  list(result=fhat, 
+       grid_borders=unscale(grid_borders_u),
+       dim=ncol(thetas),
+       h=h_u * (bounds_max - bounds_min))
+}
+```
+
+```{r}
+fhat <- kde_bounded(thetas, weights, bounds=prior, bins = bins,h = h)
+```
+
+Sanity check of the density estimate:
+
+```{r}
+fhat$result %>% summarize(sum(density*vcell)) 
+```
+
+
+# Marginales
+
+```{r fig.width=2, fig.height=2}
+fhat_marginal <- 
+  map(names(thetas), 
+      function(v) {
+        f <- kde_bounded(select(thetas, v), weights, 
+                            bounds = select(prior, v), 
+                            bins = select(bins, v), 
+                            h=select(h, v))
+        f$result
+      }
+    )
+
+plot_marginal <- function(fhat, vname) {
+  ggplot(fhat) + geom_line(aes_string(x=vname, y="density")) +
+    ylim(0,NA)
+}
+
+pmap(list(fhat=fhat_marginal, vname=names(thetas)),
+     plot_marginal)
+```
+
+
+# Marginales 2D
+
+```{r fig.width=3, fig.height=2}
+variable_pairs <- t(combn(names(thetas), 2))
+marginals <- tibble(v1=variable_pairs[,1], v2=variable_pairs[,2])
+
+fhat_marginal_2 <- pmap(marginals, function(v1, v2) {
+  f <- kde_bounded(thetas[c(v1, v2)], weights, bins=select(bins, v1, v2), 
+    bounds=select(prior, v1, v2), h = select(h, v1, v2))
+  f$result
+  })
+
+plot_marginal_2 <- function(fhat, v1, v2) {
+  ggplot(fhat) + geom_raster(aes_string(x=v1, y=v2, fill="density")) +
+    scale_fill_viridis_c(limits = c(0,NA))
+}
+
+pmap(list(fhat=fhat_marginal_2, v1=marginals$v1, v2=marginals$v2),
+      plot_marginal_2)
+```
+
+
+# Where are the peaks?
+
+Disjoint components of the subset where the density is > tau, as a function of tau.
+
+```{r}
+cgtau <- function(fhat, tau) {
+  if(tau <= 0) {
+    c <- rep(1, nrow(fhat$result))
+  } else {
+    nodes <- (1:nrow(fhat$result))[fhat$result$density >= tau]
+    g <- induced_subgraph(make_lattice(sapply(fhat$grid_borders, length)), nodes)
+    c <- components(g)$membership
+  }
+  fhat$result %>% 
+    filter(density >=tau) %>% 
+    group_by(cluster = c) %>%
+    filter(density == max(density)) %>%
+    ungroup() %>%
+    select_at(c(input_variables, "density")) %>%
+    mutate(tau=tau)
+}
+
+taus <- seq(0, max(fhat$result$density), length.out=100)
+cgtaus <- bind_rows(lapply(taus, function(x) cgtau(fhat, x)))
+
+cgtaus %>% group_by_at(input_variables) %>% summarize(density=max(density)) %>% ungroup() %>% arrange(desc(density)) 
+```
+
