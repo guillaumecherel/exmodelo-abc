@@ -1,10 +1,12 @@
-eX Modelo Module: ABC
-===
-
-[TOC]
+---
+title: 'eX Modelo Module: ABC'
+author:
+- Guillaume Chérel
+date: June 2019
+---
 
 Motivation
----
+===
 
 Calibration is about tuning a model parameter values. Generally, we want to set values that are consistent with data. One example, typical of the way we do it in OpenMOLE, is when we don't have any data with which we can directly compute parameter values (e.g. by taking the mean of the data), but have data that we can compare to the model output. The problem of calibration is then to estimate parameter values with which the model output reproduces the data.
 
@@ -23,7 +25,7 @@ Calibrating a model using ABC allows us to be explicit about how uncertain or co
 
 
 Beliefs as a probability distribution
----
+===
 
 Using ABC, we try to characterize beliefs in the values that can take the parameters. We can describe those beliefs with a probability distribution: the most probable values will be associated with higher probabilities. For example, consider the parameter `humanInformProbability`. It is real valued in the interval $[0,1]$, a probability distribution describing our belief about it is characterized by a density function which we write 
 
@@ -46,7 +48,7 @@ The model zombie takes 3 parameters (`humanInformedRatio`, `humanInformProbabili
 
 
 Updating beliefs with data and a simulation model
----
+===
 
 We want to use prior beliefs over parameter values, observed data and the model to refine our beliefs and obtain the posterior density on the parameters. According to Bayes formula, the posterior density is proportional to the prior density times another term called the likelihood:
 
@@ -64,7 +66,7 @@ The resulting posterior density value, $f_{\Theta | Y = y_0}(\theta)$ describes 
 
 
 How ABC works: iterated accept-reject
----
+===
 
 The simple, general idea of ABC is to sample many parameter values from the prior distribution, run one simulation for each and keep those whose output values are equal to the observed data $y_0$. The resulting sample $\theta_1, \dots, \theta_n$ follows the posterior distribution of $\Theta | Y = y_0$. 
 
@@ -85,7 +87,7 @@ As the algorithm progresses, $\epsilon$ will decrease and it will become more an
 
 
 Practice: Using ABC in OpenMOLE
----
+===
 
 In the OpenMOLE interface, download the entry "ABC" from the market place and have a look at the script `abc.oms`. This script applies ABC to a toy model, a gaussian mixture, but we won't focus on it here. Note only that it takes three parameters and outputs a 3-dimensional vector. Try to guess what parameters passed to the function `IslandABC` correspond to ABC's parameters discussed previously (note the distinction between the model parameters and ABC's parameters). Hint: ABC's parameters are the prior distribution, the observed data, the sample sizes $N$ and $N'$, $p_\textit{Acc}$ and $m_\textit{stop}$.
 
@@ -100,7 +102,7 @@ The solution is available [here](https://gitlab.openmole.org/exmodelo/zombies/bl
 
 
 Practice: Exploiting ABC's output
----
+===
 
 We have defined calibration as finding parameters values consistent with data. We've seen that, with ABC, we are aiming at a calibration procedure that accounts for uncertainty. How does the result of ABC convey uncertainty, and how do we use it?
 
@@ -131,7 +133,7 @@ val abc =
 
 
 Practice: Estimating the posterior density
----
+===
 
 The first thing we would like to do with the result of ABC is to develop some intuition about which parameter values are the most likely, and which are not. We have a posterior sample, but the posterior density could help us.
 
@@ -182,7 +184,7 @@ The two highest peaks of density are close with respect to the variables `humanI
 
 
 Practice: Hypothesis testing
----
+===
 
 Imagine that before people entered the stadium, the managers took measures to inform everyone about the rescue points. For example, they broadcasted an announcement at the beginning of the show. After the tragic event, they want to know if the message was clear enough that at least half of the people had the information.
 
@@ -209,7 +211,7 @@ This ratio tells us how much more probable is the hypothesis that more than half
 
 
 Practice: Forecasting
----
+===
 
 We can make predictions consistent with our inference's uncertainty using the posterior sample. If we run a simulation using the parameter values from each row in the posterior sample and take each output value, we get a prediction sample. This sample follows the distribution of output values predicted by the inferred model.
 
@@ -226,7 +228,7 @@ Does the observed data fall within the 90% prediction interval you just computed
 
 
 Choosing summary statistics or the curse of dimensionality
----
+===
 
 ABC's success depends on the information we use to compare the model output and the data. [We have seen](#How-ABC-works-iterated-accept-reject) that ABC samples from the distribution of $\Theta | \rho(Y,y_0) < \epsilon$, where $\rho(Y,y_0)$ is the euclidean distance between the model output and the data. We use this distribution as an approximation of the distribution of $\Theta | Y = y_0$, which we are ideally interested in. In order for this approximation to be reasonable, $\epsilon$ must be small. The euclidean distance is affected by what information is contained in the values of $Y$ and $y_0$, called the *summary statistics*.
 
