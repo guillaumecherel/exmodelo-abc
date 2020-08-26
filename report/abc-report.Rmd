@@ -6,7 +6,7 @@ params:
   input_variables: !r c("humanInformedRatio", "humanInformProbability", "humanFollowProbability")
   prior_bounds: !r list(humanInformedRatio = c(0,1), humanInformProbability = c(0,1), humanFollowProbability = c(0,1))
   bins: !r list(humanInformedRatio = 20, humanInformProbability = 20, humanFollowProbability = 20)
-  bandwidth: !r list(humanInformedRatio = 0.1, humanInformProbability = 0.1, humanFollowProbability = 0.1))
+  bandwidth: !r list(humanInformedRatio = 0.1, humanInformProbability = 0.1, humanFollowProbability = 0.1)
 ---
 
 ```{r}
@@ -153,7 +153,7 @@ kde_bounded <- function(thetas, weights, bounds, bins=NULL, h=NULL, evalp = NULL
 ```
 
 ```{r}
-fhat <- kde_bounded(thetas, weights, bounds=prior, bins = bins,h = h)
+fhat <- kde_bounded(thetas, weights, bounds=prior, bins = bins, h = h)
 ```
 
 Sanity check of the density estimate:
