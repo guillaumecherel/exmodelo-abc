@@ -58,7 +58,7 @@ The prior distribution term is $f_\Theta(\theta)$. It is usually constructed by 
 
 The likelihood term is $f_{Y|\Theta=\theta}(y_0)$. It gives the density of a model output value equal to the observed data $y_0$, given the parameter values $\theta$. 
 
-Generally, when we work with complex systems models, we don't know how to compute the likelihood directly. But the likelihood is indirectly expressed by the model: running multiple model simulations keeping the parameter value $\theta$ constant and collecting the output values $y_1, y_2, \dots$ is equivalent to sampling from the distribution of $Y|\Theta=\theta$. ABC aims precisely at approximating the posterior distribution when we cannot compute the likelihood directly but can sample from it with a simulation model.
+With complex systems models, we may not know how to compute the likelihood directly. But the likelihood is indirectly expressed by a stochastic model: running multiple model simulations keeping the parameter value $\theta$ constant and collecting the output values $y_1, y_2, \dots$ is equivalent to sampling from the distribution of $Y|\Theta=\theta$. ABC aims precisely at approximating the posterior distribution when we cannot compute the likelihood directly but can sample from it with a simulation model.
 
 The resulting posterior density value, $f_{\Theta | Y = y_0}(\theta)$ describes the updated belief that we want to compute. It is the belief on the values that can take the parameter, consistent with both the prior belief and the likelihood. It combines the information they contain.
 
@@ -98,19 +98,19 @@ Use your favorite method to make a scatter plot of the posterior sample, taking 
 
 Remember the model zombies with the 3 parameters `humanInformedRatio`, `humanInformProbability` and `humanFollowProbability`. Write an openmole script that runs ABC on it. Use as observed data the time series of people rescued every 20 seconds: `Array(0,5,14,42,36,9,5,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)`
 
-The solution is available [here](https://gitlab.openmole.org/exmodelo/zombies/blob/master/openmole/cooperation/abc_practice_solution.oms).
+The solution is available [here](openmole/cooperation/abc_practice_solution.oms).
 
 
 Practice: Exploiting ABC's output
 ===
 
-We have defined calibration as finding parameters values consistent with data. We've seen that, with ABC, we are aiming at a calibration procedure that accounts for uncertainty. How does the result of ABC convey uncertainty, and how do we use it?
+We have defined calibration as finding parameter values consistent with data. We've seen that, with ABC, we are aiming at a calibration procedure that accounts for uncertainty. How does the result of ABC convey uncertainty, and how do we use it?
 
 ABC conveys uncertainty through a sample of values. It follows the posterior density distribution on the parameter given the data. This distribution represents how probable the different parameter values are, according to the data, the model, and the prior distribution.
  
 The posterior sample is composed of the sequence of parameter values $(\theta_i)_{i=1}^N$ and their associated weights $w_i$. For example, [this file](samples/step872.csv) contains the result of ABC for the model coop, where the data is a sequence of number of people rescued every 20 seconds. Each row corresponds to one point in the sample. The columns `humanInformedRatio`, `humanInformProbability` and `humanFollowProbability` give the values for the corresponding parameters, and the column `weight` give the point's weight. 
 
-The OpenMOLE task used to obtain this result is (see the [complete OpenMOLE script](openmole/abc_practice_solution.oms)):
+The OpenMOLE task used to obtain this result is (see the [solution to the previous section for the complete OpenMOLE script](openmole/abc_practice_solution.oms)):
 
 ```scala
 val abc =
@@ -129,7 +129,7 @@ val abc =
   )
 ```
 
-**Practice:** Use your favorite scripting language to compute the expected value of the parameters. Remember that the sample is weighted. What can you say about this expected value? On its own, does it tell you much about the distribution of parameters given the data? Hint: not really; we would at least like to know how wide is the distribution around this value.
+**Practice:** Use your favorite scripting language to compute the expected value of the parameters. Remember that the sample is weighted. What can you say about this expected value? On its own, does it tell you much about the distribution of parameters given the data? Hint: we would at least like to know how wide is the distribution around this value.
 
 
 Practice: Estimating the posterior density
@@ -137,21 +137,22 @@ Practice: Estimating the posterior density
 
 The first thing we would like to do with the result of ABC is to develop some intuition about which parameter values are the most likely, and which are not. We have a posterior sample, but the posterior density could help us.
 
-We can estimate the posterior density from a sample using kernel density estimation. Let's estimate the posterior density within the context of the [previous section](#Practice-Exploiting-ABC%E2%80%99s-output). The posterior density is $f_{\Theta | Y = y_0}$ where $\Theta$ denotes the three parameters `humanInformedRatio`, `humanInformProbability` and `humanFollowProbability`, and $y_0$ denotes the following sequence of number of people rescued every 20 seconds:
+We can estimate the posterior density from a sample using kernel density estimation. Let's estimate the posterior density within the context of the [previous section](#practice-exploiting-abcs-output). The posterior density is $f_{\Theta | Y = y_0}$ where $\Theta$ denotes the three parameters `humanInformedRatio`, `humanInformProbability` and `humanFollowProbability`, and $y_0$ denotes the following sequence of number of people rescued every 20 seconds:
 
 $(0,5,14,42,36,9,5,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)$
 
 The R script generating the figures of this section is available [here](report/abc-report.Rmd). The data file containing the posterior sample is [here](samples/step872.csv).
 
-The easiest way to develop intuition about data is through visualisation. Ideally, we would like to plot the posterior density as seen in section [Beliefs as a probability distribution](#Beliefs-as-a-probability-distribution).
+The easiest way to develop intuition about data is through visualisation. Ideally, we would like to plot the posterior density as seen in section [Beliefs as a probability distribution](#beliefs-as-a-probability-distribution).
 
-Let's recall that the model coop has 3 parameters. Since each point in the parameter space has an associated density value, the posterior density is in 4 dimensions. But visualizing 4D data is difficult. To begin with, we can visualise the marginal density of each parameter individually, as well as each pair of parameters.
+Let's recall that the model coop has 3 parameters. Since each point in the parameter space has an associated density value, the posterior density is in 4 dimensions. But visualizing 4D data is difficult. To begin with, we can visualise the density of each parameter individually (their marginal densities), as well as each pair of parameters.
 
-Here are the estimated marginal density of individual parameters:
+Here are the estimated density of individual parameters:
 
 ![](fig/kde_marginal_1.png){width=20cm}
 
-From these marginals we can say that:
+From these densities we can say that:
+
 - Small values of the parameter `humanInformProbability` are more likely than large values. The most likely values are around 0.1.
 - Small values of the parameter `humanInformedRatio` are more likely than large values. The values closest to 0 are the most likely.
 - All values of the parameter `humanFollowProbability` are equally likely.  The parameter doesn't seem to influence the probability that the model output is close to the data.
@@ -160,11 +161,12 @@ While individual marginals give us some insight, they can hide information of in
 
 ![](fig/kde_marginal_2.png){width=20cm}
 
-These marginals of parameters taken 2 by 2 confirm our previous intuitions:
+These densities of parameters taken 2 by 2 confirm our previous intuitions:
+
 - the parameter `humanFollowProbability` doesn't seem to influence how likely each other parameter is: it's value doesn't affect the marginal density of any of the other 2 parameters;
 - the most likely values of the parameter are still close to 0 for the parameter `humanInformedRatio` and close to 0.1 for the parameter `humanInformProbability`. 
 
-Finally, let's look at the peaks density in the full joint posterior.
+Finally, let's look at the peaks in the density of all 3 parameters together (the full joint posterior distribution).
 
 ```
 ## # A tibble: 5 x 4
@@ -204,7 +206,7 @@ Similarly, the probability that `humanInformedRatio` was less than 0.5 is approx
 
 $\mathbb{P}(\textit{humanInformedRatio} < 0.5 | Y = y_0) \approx \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \textbf{1}_{[0,0.5]}(\textit{humanInformedRatio}_i)$
 
-**Practice:** We ran ABC with the settings used [previously](#Practice-Exploiting-ABC%E2%80%99s-output). Use the posterior sample in [this file](samples/step872.csv) and your favorite scripting language to compute the ratio $\frac{\mathbb{P}(\textit{humanInformedRatio} > 0.5 | Y = y_0)}
+**Practice:** We ran ABC with the settings used [previously](#practice-exploiting-abcs-output). Use the posterior sample in [this file](samples/step872.csv) and your favorite scripting language to compute the ratio $\frac{\mathbb{P}(\textit{humanInformedRatio} > 0.5 | Y = y_0)}
 {\mathbb{P}(\textit{humanInformedRatio} < 0.5 | Y = y_0)}$.
 
 This ratio tells us how much more probable is the hypothesis that more than half the humans were informed that the alternative. What can you conclude about the hypothesis that at least half of the people were aware of the rescue zones?
@@ -221,7 +223,7 @@ $\mathbb{E}[\textit{totalRescued}|Y=y] = \sum_{i=1}^n \frac{w_i}{\sum_{j=1}^n w_
 
 Where $\textit{totalRescued}_i$ is the total number of people rescued for the simulation run corresponding to the $i$-th posterior sample point, and $w_i$ is the associated weight.
 
-**Practice:** [This file](samples/posteriorPredictionTotalRescued.csv) contains the prediction  sample of the total number of rescues, obtained from the [posterior sample](samples/step872.csv) used [previously](#Practice-Exploiting-ABC%E2%80%99s-output). It was obtained using [this OpenMOLE script](openmole/abc_predict_totalRescued.oms). Compute the predicted 5-percentile and 95-percentile of the total number of people rescued. Based on the width of this interval, how confident are you to make a prediction?
+**Practice:** [This file](samples/posteriorPredictionTotalRescued.csv) contains the prediction  sample of the total number of rescues, obtained from the [posterior sample](samples/step872.csv) used [previously](#practice-exploiting-abcs-output). It was obtained using [this OpenMOLE script](openmole/abc_predict_totalRescued.oms). Compute the predicted 5-percentile and 95-percentile of the total number of people rescued. Based on the width of this interval, how confident are you to make a prediction?
 
 Does the observed data fall within the 90% prediction interval you just computed? This is called a posterior predictive check. Such tests are important. They consist in making sure that the observed data is sufficiently likely according to the inferred model. If not, then there may be a problem with the model or the inference.
 
@@ -230,7 +232,7 @@ Does the observed data fall within the 90% prediction interval you just computed
 Choosing summary statistics or the curse of dimensionality
 ===
 
-ABC's success depends on the information we use to compare the model output and the data. [We have seen](#How-ABC-works-iterated-accept-reject) that ABC samples from the distribution of $\Theta | \rho(Y,y_0) < \epsilon$, where $\rho(Y,y_0)$ is the euclidean distance between the model output and the data. We use this distribution as an approximation of the distribution of $\Theta | Y = y_0$, which we are ideally interested in. In order for this approximation to be reasonable, $\epsilon$ must be small. The euclidean distance is affected by what information is contained in the values of $Y$ and $y_0$, called the *summary statistics*.
+ABC's success depends on the information we use to compare the model output and the data. [We have seen](#how-abc-works-iterated-accept-reject) that ABC samples from the distribution of $\Theta | \rho(Y,y_0) < \epsilon$, where $\rho(Y,y_0)$ is the euclidean distance between the model output and the data. We use this distribution as an approximation of the distribution of $\Theta | Y = y_0$, which we are ideally interested in. In order for this approximation to be reasonable, $\epsilon$ must be small. The euclidean distance is affected by what information is contained in the values of $Y$ and $y_0$, called the *summary statistics*.
 
 Previously, we ran ABC on the model zombie using as summary statistics the sequence of number of rescues every 20 seconds. It forms a vector of 26 values. Alternatively, we could have used more detailed information, such as the number of rescues every second, forming a vector in about 500 dimensions. Or we could have used more aggregated information, like the total number of rescues for the whole simulation.
 
@@ -238,7 +240,7 @@ In order for ABC to work well, the summary statistics needs to satisfy two const
 
 A summary statistics is sufficient for a parameter if they provide as much information as the full dataset to estimate the parameter. It would be tempting to add as much information as possible into the summary statistics, but as we do so, ABC suffers from the curse of dimensionality.
 
-As the number of dimensions increases, it becomes more difficult to get small values for $\epsilon$. Recall that the [fondamental principle of ABC](#How-ABC-works-iterated-accept-reject) is to sample parameter values from the prior distribution and keep those which result in an output close to the observed data. The curse of dimensionality implies that the chance of sampling output values close to the observed data decreases as the number of dimensions increases, affecting the value of $\epsilon$. Since ABC samples from the distribution of $\Theta | \rho(Y, y_0) < \epsilon$, aiming for small $\epsilon$ to approximate $\Theta | Y = y_0$, the approximation deteriorates.
+As the number of dimensions increases, it becomes more difficult to get small values for $\epsilon$. Recall that the [fondamental principle of ABC](#how-abc-works-iterated-accept-reject) is to sample parameter values from the prior distribution and keep those which result in an output close to the observed data. The curse of dimensionality implies that the chance of sampling output values close to the observed data decreases as the number of dimensions increases, affecting the value of $\epsilon$. Since ABC samples from the distribution of $\Theta | \rho(Y, y_0) < \epsilon$, aiming for small $\epsilon$ to approximate $\Theta | Y = y_0$, the approximation deteriorates.
 
 Let's compare the estimated posterior marginal densities of each parameter from the result of ABC using respectively the total number of rescues ($\in \mathbb{R}$), the number of rescues every 20 seconds ($\in \mathbb{R}^{26}$) and the number of rescues every second ($\in \mathbb{R}^{500}$):
 
