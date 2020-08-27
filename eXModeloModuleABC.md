@@ -97,7 +97,7 @@ Use your favorite method to make a scatter plot of the posterior sample, taking 
 
 Remember the model zombies with the 3 parameters `humanInformedRatio`, `humanInformProbability` and `humanFollowProbability`. Write an openmole script that runs ABC on it. Use as observed data the time series of people rescued every 20 seconds: `Array(0,5,14,42,36,9,5,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)`
 
-The solution is available [here](openmole/cooperation/abc_practice_solution.oms).
+The solution is available [here](openmole/abc_practice_solution.oms).
 
 
 Practice: Exploiting ABC's output
