@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Guillaume Chérel" />
+  <title>eX Modelo Module: ABC</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">eX Modelo Module: ABC</h1>
+<p class="author">Guillaume Chérel</p>
+<p class="date">June 2019</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#motivation">Motivation</a></li>
+<li><a href="#beliefs-as-a-probability-distribution">Beliefs as a probability distribution</a></li>
+<li><a href="#updating-beliefs-with-data-and-a-simulation-model">Updating beliefs with data and a simulation model</a></li>
+<li><a href="#how-abc-works-iterated-accept-reject">How ABC works: iterated accept-reject</a></li>
+<li><a href="#practice-using-abc-in-openmole">Practice: Using ABC in OpenMOLE</a></li>
+<li><a href="#practice-exploiting-abcs-output">Practice: Exploiting ABC’s output</a></li>
+<li><a href="#practice-estimating-the-posterior-density">Practice: Estimating the posterior density</a></li>
+<li><a href="#practice-hypothesis-testing">Practice: Hypothesis testing</a></li>
+<li><a href="#practice-forecasting">Practice: Forecasting</a></li>
+<li><a href="#choosing-summary-statistics-or-the-curse-of-dimensionality">Choosing summary statistics or the curse of dimensionality</a></li>
+</ul>
+</nav>
+<h1 id="motivation">Motivation</h1>
+<p>Calibration is about tuning a model parameter values. Generally, we want to set values that are consistent with data. One example, typical of the way we do it in OpenMOLE, is when we don’t have any data with which we can directly compute parameter values (e.g. by taking the mean of the data), but have data that we can compare to the model output. The problem of calibration is then to estimate parameter values with which the model output reproduces the data.</p>
+<p>The objective of ABC is to account for uncertainty when performing calibration. We have already approached calibration using optimisation with NSGA2, but it is little equipped to deal with the model stochasticity. Optimisation-based calibration searches for parameter values which minimize a distance between the model output and the data. When the model is stochastic the distance can vary from one simulation run to the next, even though the parameter values are kept constant. How, then, can we chose the parameter values with the smallest distance when they don’t always give the same? With NSGA2, we usually run several simulations with the same parameter values and compare the data to the median or average over the replications. We are circumventing the problem by using quantities that are more stable than individual simulation outputs. But the median or average is not always representative of the model individual output (think of a model output which has a bimodal distribution). Moreover, we are deliberately discarding information about the model randomness, and that information is valuable.</p>
+<p>Randomness in a model expresses our uncertainty about the underlying processes. Recall the zombie model. To represent the sharing of information about a rescue zone by a probability of successful sharing (parameter <code>humanInformProbability</code>) reflects that we don’t really know the conditions for successful communication. It can depend on each person’s physical and mental states, or on the situation where they meet. Our model isn’t designed for that level of detail, but if we believe that it is successful more often than not, we may want to set this parameter to a value greater than 0.5.</p>
+<p>As a consequence, a model run with a given parameter value may or may not yield an output that reproduces the data, and we can describe the chance that it does with a probability.</p>
+<p>Because of that, the calibration result is also uncertain. If our data contains clues that information sharing is successful most of the time, we will lean towards believing that higher values of <code>humanInformProbability</code> are more likely than lower values. But low values remain nonetheless possible.</p>
+<p>Uncertainty is a valuable information when making scientific statements. It helps us avoid making misleading claims, for example, when estimating parameter values or forecasting. For example, when estimating a parameter like <code>humanInformProbability</code> that takes values between 0 and 1, we can convey the degree of uncertainty by giving an interval of values within which we believe the value lies. To say that it lies between 0.5 and 0.6 is very different from saying it lies between 0.2 and 0.9. We are not likely to draw the same conclusions nor to take the same decisions based on one or the other.</p>
+<p>Calibrating a model using ABC allows us to be explicit about how uncertain or confident we are about our conclusions. It estimates a probability distribution describing the belief in the different parameter values to fit the data. Before observing any data, we may or may not already have some ideas about which parameter values are more likely than others. Data can contradict or confirm them. This is the general scheme of approximate Bayesinan computation (ABC), and more generally Bayesian inference: state initial beliefs about parameter values and update them with data and a model.</p>
+<h1 id="beliefs-as-a-probability-distribution">Beliefs as a probability distribution</h1>
+<p>Using ABC, we try to characterize beliefs in the values that can take the parameters. We can describe those beliefs with a probability distribution: the most probable values will be associated with higher probabilities. For example, consider the parameter <code>humanInformProbability</code>. It is real valued in the interval <span class="math inline">\([0,1]\)</span>, a probability distribution describing our belief about it is characterized by a density function which we write</p>
+<p><span class="math inline">\(f_\texttt{humanInformProbability}: [0,1] \rightarrow \mathbb{R}_+\)</span>.</p>
+<p>It associates to each possible value a positive real value, the density, which describes how likely this value is relative to the others. A flat function gives all values the same density. It reflects that all value are believed equally likely. When the shape isn’t flat, some values are more credible than others. A density value equal to 0 means that the associated parameter value are believed to be impossible.</p>
+<figure>
+<img src="fig/belief_as_density.png" style="width:20cm" alt="" /><figcaption><em>Figure: Examples of density fonctions for a parameter <span class="math inline">\(\theta\)</span> taking values between 0 and 1.</em></figcaption>
+</figure>
+<p>A high degree of confidence can be translated as a narrow distribution, peaked around the value on which we would put our bet. A lower degree of confidence would be associated to a wider distribution and a lower peak.</p>
+<figure>
+<img src="fig/belief_wide_narrow.png" style="width:13cm" alt="" /><figcaption><em>Figure: Examples of narrow and wide density functions.</em></figcaption>
+</figure>
+<p>Such density functions will describe <em>prior</em> and <em>posterior</em> beliefs about the parameters, i.e. respectively beliefs we have about them before observing any data and beliefs updated with data and the model. We call them respectively <em>prior density</em> and <em>posterior density</em>. The former is generally constructed by hand to reflect our state of belief based on prior data or theoretical knowledge. The latter is the result of ABC. For example, the posterior density on the parameter <code>humanInformProbability</code> given a <code>proportionInfected</code> equal to <span class="math inline">\(a\)</span> will be denoted with a conditional density function like</p>
+<p><span class="math display">\[f_{\texttt{humanInformProbability} | \texttt{proportionInfected} = a}:[0,1] \rightarrow \mathbb{R}_+\]</span>.</p>
+<p>The model zombie takes 3 parameters (<code>humanInformedRatio</code>, <code>humanInformProbability</code> and <code>humanFollowProbability</code>) and outputs multiple values (these will depend on the case study). For simplicity, we will abstract over the parameters and output values by representing them respectively with the random variables <span class="math inline">\(\Theta\)</span> and <span class="math inline">\(Y\)</span>, both being multidimensional real-valued. The lowercase letter <span class="math inline">\(\theta, y\)</span> will refer to individual realizations. With this notation, the prior and posterior density are written <span class="math inline">\(f_\Theta\)</span> and <span class="math inline">\(f_{\Theta|Y = y_0}\)</span>, where <span class="math inline">\(y_0\)</span> denotes the observed data.</p>
+<h1 id="updating-beliefs-with-data-and-a-simulation-model">Updating beliefs with data and a simulation model</h1>
+<p>We want to use prior beliefs over parameter values, observed data and the model to refine our beliefs and obtain the posterior density on the parameters. According to Bayes formula, the posterior density is proportional to the prior density times another term called the likelihood:</p>
+<p><span class="math inline">\(f_{\Theta | Y = y_0}(\theta) \propto f_{Y| \Theta = \theta}(y_0) f_\Theta(\theta).\)</span></p>
+<p>The prior distribution term is <span class="math inline">\(f_\Theta(\theta)\)</span>. It is usually constructed by hand to reflect our subjective state of knowledge over the parameter. Often, we assume no prior knowledge by using a uniform distribution over a reasonnable range of values. That range must be chosen carefully, since any parameter value outside of it — where the prior density is 0 — will also have a posterior density equal to 0, even if the data may suggest otherwise.</p>
+<p>The likelihood term is <span class="math inline">\(f_{Y|\Theta=\theta}(y_0)\)</span>. It gives the density of a model output value equal to the observed data <span class="math inline">\(y_0\)</span>, given the parameter values <span class="math inline">\(\theta\)</span>.</p>
+<p>With complex systems models, we may not know how to compute the likelihood directly. But the likelihood is indirectly expressed by a stochastic model: running multiple model simulations keeping the parameter value <span class="math inline">\(\theta\)</span> constant and collecting the output values <span class="math inline">\(y_1, y_2, \dots\)</span> is equivalent to sampling from the distribution of <span class="math inline">\(Y|\Theta=\theta\)</span>. ABC aims precisely at approximating the posterior distribution when we cannot compute the likelihood directly but can sample from it with a simulation model.</p>
+<p>The resulting posterior density value, <span class="math inline">\(f_{\Theta | Y = y_0}(\theta)\)</span> describes the updated belief that we want to compute. It is the belief on the values that can take the parameter, consistent with both the prior belief and the likelihood. It combines the information they contain.</p>
+<h1 id="how-abc-works-iterated-accept-reject">How ABC works: iterated accept-reject</h1>
+<p>The simple, general idea of ABC is to sample many parameter values from the prior distribution, run one simulation for each and keep those whose output values are equal to the observed data <span class="math inline">\(y_0\)</span>. The resulting sample <span class="math inline">\(\theta_1, \dots, \theta_n\)</span> follows the posterior distribution of <span class="math inline">\(\Theta | Y = y_0\)</span>.</p>
+<p>With a real-valued output <span class="math inline">\(Y\)</span>, keeping only the simulations whose output is equal to <span class="math inline">\(y_0\)</span> is not possible. Instead, we keep those whose outputs are within a euclidean distance <span class="math inline">\(\epsilon\)</span> of <span class="math inline">\(y_0\)</span>. It means that ABC actually samples from the distribution of <span class="math inline">\(\Theta | \rho(Y, y_0) &lt; \epsilon\)</span>, where <span class="math inline">\(\rho(Y,y_0)\)</span> is the euclidean distance between the model output <span class="math inline">\(Y\)</span> and the observed data <span class="math inline">\(y\)</span>. We assume that <span class="math inline">\(\Theta | \rho(Y, y_0) &lt; \epsilon\)</span> is a good approximation of <span class="math inline">\(\Theta | Y = y\)</span> when <span class="math inline">\(\epsilon\)</span> is small.</p>
+<p>The approach of Lenormand, Jabot and Deffuant (2012)<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> implemented in OpenMOLE tries to make <span class="math inline">\(\epsilon\)</span> as small as possible step by step:</p>
+<ul>
+<li>Sample <span class="math inline">\(N\)</span> values <span class="math inline">\(\theta_1, \dots,\theta_N\)</span> from the prior distribution and run one simulation for each to get the sequence of pairs <span class="math inline">\(S = (\theta_1, y_1), \dots, (\theta_N, y_N)\)</span>,</li>
+<li>Repeat
+<ul>
+<li>Sample <span class="math inline">\(N&#39;\)</span> parameter values and run the simulations resulting in a sequence of <span class="math inline">\(N&#39;\)</span> pairs <span class="math inline">\(S&#39; = (\theta&#39;_1, y&#39;_1), \dots, (\theta&#39;_{N&#39;}, y&#39;_{N&#39;})\)</span></li>
+<li>Replace <span class="math inline">\(S\)</span> by the <span class="math inline">\(N\)</span> pairs from <span class="math inline">\(S\)</span> and <span class="math inline">\(S&#39;\)</span> with the lowest distance from the data <span class="math inline">\(y\)</span>.</li>
+</ul></li>
+</ul>
+<p>There, <span class="math inline">\(\epsilon\)</span> is implicitly determined by the highest distance between a simulation output and the data, among the <span class="math inline">\(N\)</span> simulations kept at each step.</p>
+<p>As the algorithm progresses, <span class="math inline">\(\epsilon\)</span> will decrease and it will become more and more difficult to generate new simulations that are within a distance <span class="math inline">\(\epsilon\)</span> to the data. We chose to terminate the algorithm when the proportion of simulation accepted among the <span class="math inline">\(m_\textit{stop} \times N\)</span> last simulations (which can be greater than <span class="math inline">\(N&#39;\)</span>) decreases below a parameter <span class="math inline">\(p_\textit{Acc}\)</span>.</p>
+<h1 id="practice-using-abc-in-openmole">Practice: Using ABC in OpenMOLE</h1>
+<p>In the OpenMOLE interface, download the entry “ABC” from the market place and have a look at the script <code>abc.oms</code>. This script applies ABC to a toy model, a gaussian mixture, but we won’t focus on it here. Note only that it takes three parameters and outputs a 3-dimensional vector. Try to guess what parameters passed to the function <code>IslandABC</code> correspond to ABC’s parameters discussed previously (note the distinction between the model parameters and ABC’s parameters). Hint: ABC’s parameters are the prior distribution, the observed data, the sample sizes <span class="math inline">\(N\)</span> and <span class="math inline">\(N&#39;\)</span>, <span class="math inline">\(p_\textit{Acc}\)</span> and <span class="math inline">\(m_\textit{stop}\)</span>.</p>
+<p>Run the script. It should take about 3 minutes. Refresh the file list on the left (look at the buttons above the list). The directory “posteriorSample” should appear. It contains the posterior sample given by ABC at each timestep. The last one is the final sample (you can sort the files by date). Open this file. Each row is a sample point. There is a column for each parameter (here, they are named “theta1”, “theta2” and “theta3”). Recall that this is a weighted sample, and the weights are given in the column “weight”. The column “rhos” gives the euclidean distance that was computed between the simulation output and the observed data.</p>
+<p>Use your favorite method to make a scatter plot of the posterior sample, taking the parameters two by two. Recall that you can do it in only a few clicks in openmole, if you click on the button “Plot” above the current table. Which parameter values seem the most credible, given the data?</p>
+<p>Remember the model zombies with the 3 parameters <code>humanInformedRatio</code>, <code>humanInformProbability</code> and <code>humanFollowProbability</code>. Write an openmole script that runs ABC on it. Use as observed data the time series of people rescued every 20 seconds: <code>Array(0,5,14,42,36,9,5,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)</code></p>
+<p>The solution is available <a href="openmole/cooperation/abc_practice_solution.oms">here</a>.</p>
+<h1 id="practice-exploiting-abcs-output">Practice: Exploiting ABC’s output</h1>
+<p>We have defined calibration as finding parameter values consistent with data. We’ve seen that, with ABC, we are aiming at a calibration procedure that accounts for uncertainty. How does the result of ABC convey uncertainty, and how do we use it?</p>
+<p>ABC conveys uncertainty through a sample of values. It follows the posterior density distribution on the parameter given the data. This distribution represents how probable the different parameter values are, according to the data, the model, and the prior distribution.</p>
+<p>The posterior sample is composed of the sequence of parameter values <span class="math inline">\((\theta_i)_{i=1}^N\)</span> and their associated weights <span class="math inline">\(w_i\)</span>. For example, <a href="samples/step872.csv">this file</a> contains the result of ABC for the model coop, where the data is a sequence of number of people rescued every 20 seconds. Each row corresponds to one point in the sample. The columns <code>humanInformedRatio</code>, <code>humanInformProbability</code> and <code>humanFollowProbability</code> give the values for the corresponding parameters, and the column <code>weight</code> give the point’s weight.</p>
+<p>The OpenMOLE task used to obtain this result is (see the <a href="openmole/abc_practice_solution.oms">solution to the previous section for the complete OpenMOLE script</a>):</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode scala"><code class="sourceCode scala"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">val</span> abc =</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>  <span class="fu">IslandABC</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>    evaluation = model,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>    prior = Seq(</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>      humanInformedRatio <span class="fu">in</span> (<span class="fl">0.0</span>, <span class="fl">1.0</span>),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>      humanInformProbability <span class="fu">in</span> (<span class="fl">0.0</span>, <span class="fl">1.0</span>),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>      humanFollowProbability <span class="fu">in</span> (<span class="fl">0.0</span>, <span class="fl">1.0</span>)),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a>    observed =  Seq(rescuedDynamic -&gt; Array(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">14</span>,<span class="dv">42</span>,<span class="dv">36</span>,<span class="dv">9</span>,<span class="dv">5</span>,<span class="dv">3</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>)),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a>    sample = <span class="dv">1000</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a>    generated = <span class="dv">100</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a>    minAcceptedRatio = <span class="fl">0.01</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a>    stopSampleSizeFactor = <span class="dv">5</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a>    parallelism = <span class="dv">300</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a>  )</span></code></pre></div>
+<p><strong>Practice:</strong> Use your favorite scripting language to compute the expected value of the parameters. Remember that the sample is weighted. What can you say about this expected value? On its own, does it tell you much about the distribution of parameters given the data? Hint: we would at least like to know how wide is the distribution around this value.</p>
+<h1 id="practice-estimating-the-posterior-density">Practice: Estimating the posterior density</h1>
+<p>The first thing we would like to do with the result of ABC is to develop some intuition about which parameter values are the most likely, and which are not. We have a posterior sample, but the posterior density could help us.</p>
+<p>We can estimate the posterior density from a sample using kernel density estimation. Let’s estimate the posterior density within the context of the <a href="#practice-exploiting-abcs-output">previous section</a>. The posterior density is <span class="math inline">\(f_{\Theta | Y = y_0}\)</span> where <span class="math inline">\(\Theta\)</span> denotes the three parameters <code>humanInformedRatio</code>, <code>humanInformProbability</code> and <code>humanFollowProbability</code>, and <span class="math inline">\(y_0\)</span> denotes the following sequence of number of people rescued every 20 seconds:</p>
+<p><span class="math inline">\((0,5,14,42,36,9,5,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)\)</span></p>
+<p>The R script generating the figures of this section is available <a href="report/abc-report.Rmd">here</a>. The data file containing the posterior sample is <a href="samples/step872.csv">here</a>.</p>
+<p>The easiest way to develop intuition about data is through visualisation. Ideally, we would like to plot the posterior density as seen in section <a href="#beliefs-as-a-probability-distribution">Beliefs as a probability distribution</a>.</p>
+<p>Let’s recall that the model coop has 3 parameters. Since each point in the parameter space has an associated density value, the posterior density is in 4 dimensions. But visualizing 4D data is difficult. To begin with, we can visualise the density of each parameter individually (their marginal densities), as well as each pair of parameters.</p>
+<p>Here are the estimated density of individual parameters:</p>
+<p><img src="fig/kde_marginal_1.png" style="width:20cm" /></p>
+<p>From these densities we can say that:</p>
+<ul>
+<li>Small values of the parameter <code>humanInformProbability</code> are more likely than large values. The most likely values are around 0.1.</li>
+<li>Small values of the parameter <code>humanInformedRatio</code> are more likely than large values. The values closest to 0 are the most likely.</li>
+<li>All values of the parameter <code>humanFollowProbability</code> are equally likely. The parameter doesn’t seem to influence the probability that the model output is close to the data.</li>
+</ul>
+<p>While individual marginals give us some insight, they can hide information of interaction between parameters. Let’s examine interactions of parameters 2 by 2:</p>
+<p><img src="fig/kde_marginal_2.png" style="width:20cm" /></p>
+<p>These densities of parameters taken 2 by 2 confirm our previous intuitions:</p>
+<ul>
+<li>the parameter <code>humanFollowProbability</code> doesn’t seem to influence how likely each other parameter is: it’s value doesn’t affect the marginal density of any of the other 2 parameters;</li>
+<li>the most likely values of the parameter are still close to 0 for the parameter <code>humanInformedRatio</code> and close to 0.1 for the parameter <code>humanInformProbability</code>.</li>
+</ul>
+<p>Finally, let’s look at the peaks in the density of all 3 parameters together (the full joint posterior distribution).</p>
+<pre><code>## # A tibble: 5 x 4
+##   humanInformedRatio humanInformProbability humanFollowProbability density
+##                &lt;dbl&gt;                  &lt;dbl&gt;                  &lt;dbl&gt;   &lt;dbl&gt;
+## 1            0.00205                  0.102               0.0508      5.35
+## 2            0.0519                   0.102               0.849       4.23
+## 3            0.00205                  0.995               0.899       2.81
+## 4            0.850                    0.251               0.899       1.85
+## 5            0.999                    0.301               0.000935    1.28</code></pre>
+<p>The two highest peaks of density are close with respect to the variables <code>humanInformedRatio</code> and <code>humanInformProbability</code> but far away with respect to the parameter <code>humanFollowProbability</code>. This is consistent with our previous observations, i.e. the location of the most likely values of parameters <code>humanInformedRatio</code> and <code>humanInformProbability</code>, and the flat density on the parameter <code>humanFollowProbability</code>.</p>
+<p><strong>Practice:</strong> You can get to similar results using histograms, which are simpler to program. Using your favorite scripting language, compute the equivalent of the 1D marginal above with histograms. Remember that the sample is weighted!</p>
+<h1 id="practice-hypothesis-testing">Practice: Hypothesis testing</h1>
+<p>Imagine that before people entered the stadium, the managers took measures to inform everyone about the rescue points. For example, they broadcasted an announcement at the beginning of the show. After the tragic event, they want to know if the message was clear enough that at least half of the people had the information.</p>
+<p>With the posterior density, we can compute the probabilities that <code>humanInformedRatio</code> was respectively greater than and less than 0.5, and compare them.</p>
+<p>The probability that <code>humanInformedRatio</code> is greater than 0.5, according to the posterior density, is:</p>
+<p><span class="math inline">\(\mathbb{P}(\textit{humanInformedRatio} &gt; 0.5 | Y = y_0) = \int_{0.5}^1 f_{\textit{humanInformedRatio}|Y=y_0}(x)dx,\)</span></p>
+<p>where <span class="math inline">\(y_0\)</span> is the observed sequence of number of rescues. This can be approximated with the weighted sample that we got from ABC by:</p>
+<p><span class="math inline">\(\mathbb{P}(\textit{humanInformedRatio} &gt; 0.5 | Y = y_0) \approx \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \textbf{1}_{[0.5,1]}(\textit{humanInformedRatio}_i)\)</span></p>
+<p>Where <span class="math inline">\(w_i\)</span> is the weight associated to the <span class="math inline">\(i\)</span>-th sample point, <span class="math inline">\(\textbf{1}\)</span> is the indicator function (<span class="math inline">\(\textbf{1}_{[0.5, 1]}(\textit{x}) = 1\)</span> if <span class="math inline">\(\textit{x} \in [0.5,1]\)</span>, <span class="math inline">\(0\)</span> otherwise), <span class="math inline">\(\textit{humanInformedRatio}_i\)</span> is the value of the parameter <code>humanInformedRatio</code> of the <span class="math inline">\(i\)</span>-th sample point.</p>
+<p>Similarly, the probability that <code>humanInformedRatio</code> was less than 0.5 is approximated by:</p>
+<p><span class="math inline">\(\mathbb{P}(\textit{humanInformedRatio} &lt; 0.5 | Y = y_0) \approx \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \textbf{1}_{[0,0.5]}(\textit{humanInformedRatio}_i)\)</span></p>
+<p><strong>Practice:</strong> We ran ABC with the settings used <a href="#practice-exploiting-abcs-output">previously</a>. Use the posterior sample in <a href="samples/step872.csv">this file</a> and your favorite scripting language to compute the ratio <span class="math inline">\(\frac{\mathbb{P}(\textit{humanInformedRatio} &gt; 0.5 | Y = y_0)} {\mathbb{P}(\textit{humanInformedRatio} &lt; 0.5 | Y = y_0)}\)</span>.</p>
+<p>This ratio tells us how much more probable is the hypothesis that more than half the humans were informed that the alternative. What can you conclude about the hypothesis that at least half of the people were aware of the rescue zones?</p>
+<h1 id="practice-forecasting">Practice: Forecasting</h1>
+<p>We can make predictions consistent with our inference’s uncertainty using the posterior sample. If we run a simulation using the parameter values from each row in the posterior sample and take each output value, we get a prediction sample. This sample follows the distribution of output values predicted by the inferred model.</p>
+<p>For example, the expected value of the predicted total number of people rescued during an attack according to the inferred model is approximated by</p>
+<p><span class="math inline">\(\mathbb{E}[\textit{totalRescued}|Y=y] = \sum_{i=1}^n \frac{w_i}{\sum_{j=1}^n w_j} \textit{totalRescued}_i\)</span></p>
+<p>Where <span class="math inline">\(\textit{totalRescued}_i\)</span> is the total number of people rescued for the simulation run corresponding to the <span class="math inline">\(i\)</span>-th posterior sample point, and <span class="math inline">\(w_i\)</span> is the associated weight.</p>
+<p><strong>Practice:</strong> <a href="samples/posteriorPredictionTotalRescued.csv">This file</a> contains the prediction sample of the total number of rescues, obtained from the <a href="samples/step872.csv">posterior sample</a> used <a href="#practice-exploiting-abcs-output">previously</a>. It was obtained using <a href="openmole/abc_predict_totalRescued.oms">this OpenMOLE script</a>. Compute the predicted 5-percentile and 95-percentile of the total number of people rescued. Based on the width of this interval, how confident are you to make a prediction?</p>
+<p>Does the observed data fall within the 90% prediction interval you just computed? This is called a posterior predictive check. Such tests are important. They consist in making sure that the observed data is sufficiently likely according to the inferred model. If not, then there may be a problem with the model or the inference.</p>
+<h1 id="choosing-summary-statistics-or-the-curse-of-dimensionality">Choosing summary statistics or the curse of dimensionality</h1>
+<p>ABC’s success depends on the information we use to compare the model output and the data. <a href="#how-abc-works-iterated-accept-reject">We have seen</a> that ABC samples from the distribution of <span class="math inline">\(\Theta | \rho(Y,y_0) &lt; \epsilon\)</span>, where <span class="math inline">\(\rho(Y,y_0)\)</span> is the euclidean distance between the model output and the data. We use this distribution as an approximation of the distribution of <span class="math inline">\(\Theta | Y = y_0\)</span>, which we are ideally interested in. In order for this approximation to be reasonable, <span class="math inline">\(\epsilon\)</span> must be small. The euclidean distance is affected by what information is contained in the values of <span class="math inline">\(Y\)</span> and <span class="math inline">\(y_0\)</span>, called the <em>summary statistics</em>.</p>
+<p>Previously, we ran ABC on the model zombie using as summary statistics the sequence of number of rescues every 20 seconds. It forms a vector of 26 values. Alternatively, we could have used more detailed information, such as the number of rescues every second, forming a vector in about 500 dimensions. Or we could have used more aggregated information, like the total number of rescues for the whole simulation.</p>
+<p>In order for ABC to work well, the summary statistics needs to satisfy two constraints: be <em>sufficient</em> for the parameters, and avoid the curse of dimensionality.</p>
+<p>A summary statistics is sufficient for a parameter if they provide as much information as the full dataset to estimate the parameter. It would be tempting to add as much information as possible into the summary statistics, but as we do so, ABC suffers from the curse of dimensionality.</p>
+<p>As the number of dimensions increases, it becomes more difficult to get small values for <span class="math inline">\(\epsilon\)</span>. Recall that the <a href="#how-abc-works-iterated-accept-reject">fondamental principle of ABC</a> is to sample parameter values from the prior distribution and keep those which result in an output close to the observed data. The curse of dimensionality implies that the chance of sampling output values close to the observed data decreases as the number of dimensions increases, affecting the value of <span class="math inline">\(\epsilon\)</span>. Since ABC samples from the distribution of <span class="math inline">\(\Theta | \rho(Y, y_0) &lt; \epsilon\)</span>, aiming for small <span class="math inline">\(\epsilon\)</span> to approximate <span class="math inline">\(\Theta | Y = y_0\)</span>, the approximation deteriorates.</p>
+<p>Let’s compare the estimated posterior marginal densities of each parameter from the result of ABC using respectively the total number of rescues (<span class="math inline">\(\in \mathbb{R}\)</span>), the number of rescues every 20 seconds (<span class="math inline">\(\in \mathbb{R}^{26}\)</span>) and the number of rescues every second (<span class="math inline">\(\in \mathbb{R}^{500}\)</span>):</p>
+<p><strong>Total number of rescues:</strong></p>
+<p><img src="fig/kde_marginal_humanFollowProbability_totalRescued.png" style="width:6.5cm" /> <img src="fig/kde_marginal_humanInformedRatio_totalRescued.png" style="width:6.5cm" /> <img src="fig/kde_marginal_humanInformProbability_totalRescued.png" style="width:6.5cm" /></p>
+<p><strong>Number of rescues every 20 seconds:</strong></p>
+<p><img src="fig/kde_marginal_humanFollowProbability_rescuedDynamic_w20.png" style="width:6.5cm" /> <img src="fig/kde_marginal_humanInformedRatio_rescuedDynamic_w20.png" style="width:6.5cm" /> <img src="fig/kde_marginal_humanInformProbability_rescuedDynamic_w20.png" style="width:6.5cm" /></p>
+<p><strong>Number of rescues every second:</strong></p>
+<p><img src="fig/kde_marginal_humanFollowProbability_rescuedDynamic_w1.png" style="width:6.5cm" /> <img src="fig/kde_marginal_humanInformedRatio_rescuedDynamic_w1.png" style="width:6.5cm" /> <img src="fig/kde_marginal_humanInformProbability_rescuedDynamic_w1.png" style="width:6.5cm" /></p>
+<p>There are notable differences between the estimated marginals. In the first row, the three marginals are almost flat, suggesting that the summary statistic is not sufficient for the parameters. The second and third rows differ in the peak of the marginal for the parameter <code>humanInformProbability</code>: it is located around 0.1 in the second row and close to 0 in the third. Without any knowledge about the expected density that we are trying to estimate, it is hard to know which one is the most accurate.</p>
+<p>A strategy to evaluate the quality of the whole inference process is to use simulation to generate pairs of parameter values and output values, and compare the result of ABC on each output value to the corresponding parameter value. The observed data we used in the previous applications of ABC was actually generated by a simulation run using the value 0.09 for <code>humanInformProbability</code>. We are thus tempted to say that using the summary statistics in 20 dimensions gives better results than using the most detailed summary statistics in 500 dimensions.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>Source: Lenormand, M., Jabot, F. &amp; Deffuant, G. Comput Stat (2013) 28: 2777. https://doi.org/10.1007/s00180-013-0428-3<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>
