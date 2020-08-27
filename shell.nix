@@ -6,6 +6,7 @@ let
   dependencies = with pkgs; [
     R
     pandoc
+    # (texlive.combine { inherit (texlive) scheme-small hyperref; })
   ];
 
   r-packages = with pkgs.rPackages; [
