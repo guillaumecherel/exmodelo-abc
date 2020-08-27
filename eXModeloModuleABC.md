@@ -29,7 +29,7 @@ Beliefs as a probability distribution
 
 Using ABC, we try to characterize beliefs in the values that can take the parameters. We can describe those beliefs with a probability distribution: the most probable values will be associated with higher probabilities. For example, consider the parameter `humanInformProbability`. It is real valued in the interval $[0,1]$, a probability distribution describing our belief about it is characterized by a density function which we write 
 
-$f_\texttt{humanInformProbability}: [0,1] \rightarrow \mathbb{R}_+$.
+$$f_\texttt{humanInformProbability}: [0,1] \rightarrow \mathbb{R}_+ .$$
 
 It associates to each possible value a positive real value, the density, which describes how likely this value is relative to the others. A flat function gives all values the same density. It reflects that all value are believed equally likely. When the shape isn't flat, some values are more credible than others. A density value equal to 0 means that the associated parameter value are believed to be impossible.
 
@@ -41,7 +41,7 @@ A high degree of confidence can be translated as a narrow distribution, peaked a
 
 Such density functions will describe *prior* and *posterior* beliefs about the parameters, i.e. respectively beliefs we have about them before observing any data and beliefs updated with data and the model. We call them respectively *prior density* and *posterior density*. The former is generally constructed by hand to reflect our state of belief based on prior data or theoretical knowledge. The latter is the result of ABC. For example, the posterior density on the parameter `humanInformProbability` given a `proportionInfected` equal to $a$ will be denoted with a conditional density function like 
 
-$$f_{\texttt{humanInformProbability} | \texttt{proportionInfected} = a}:[0,1] \rightarrow \mathbb{R}_+ .$$
+$$f_{\texttt{humanInformProbability} | \texttt{proportionInfected} = a}:[0,1] \rightarrow \mathbb{R}_+ .$$
 
 The model zombie takes 3 parameters (`humanInformedRatio`, `humanInformProbability` and `humanFollowProbability`) and outputs multiple values (these will depend on the case study). For simplicity, we will abstract over the parameters and output values by representing them respectively with the random variables $\Theta$ and $Y$, both being multidimensional real-valued. The lowercase letter $\theta, y$ will refer to individual realizations. With this notation, the prior and posterior density are written $f_\Theta$ and $f_{\Theta|Y = y_0}$, where $y_0$ denotes the observed data.
 
@@ -51,7 +51,7 @@ Updating beliefs with data and a simulation model
 
 We want to use prior beliefs over parameter values, observed data and the model to refine our beliefs and obtain the posterior density on the parameters. According to Bayes formula, the posterior density is proportional to the prior density times another term called the likelihood:
 
-$$f_{\Theta | Y = y_0}(\theta) \propto f_{Y| \Theta = \theta}(y_0) f_\Theta(\theta).$$
+$$f_{\Theta | Y = y_0}(\theta) \propto f_{Y| \Theta = \theta}(y_0) f_\Theta(\theta) .$$
 
 The prior distribution term is $f_\Theta(\theta)$. It is usually constructed by hand to reflect our subjective state of knowledge over the parameter. Often, we assume no prior knowledge by using a uniform distribution over a reasonnable range of values. That range must be chosen carefully, since any parameter value outside of it --- where the prior density is 0 --- will also have a posterior density equal to 0, even if the data may suggest otherwise. 
 
@@ -138,7 +138,7 @@ The first thing we would like to do with the result of ABC is to develop some in
 
 We can estimate the posterior density from a sample using kernel density estimation. Let's estimate the posterior density within the context of the [previous section](#practice-exploiting-abcs-output). The posterior density is $f_{\Theta | Y = y_0}$ where $\Theta$ denotes the three parameters `humanInformedRatio`, `humanInformProbability` and `humanFollowProbability`, and $y_0$ denotes the following sequence of number of people rescued every 20 seconds:
 
-$(0,5,14,42,36,9,5,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)$
+$$(0,5,14,42,36,9,5,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0) .$$
 
 The R script generating the figures of this section is available [here](report/abc-report.Rmd). The data file containing the posterior sample is [here](samples/step872.csv).
 
@@ -193,17 +193,17 @@ With the posterior density, we can compute the probabilities that `humanInformed
 
 The probability that `humanInformedRatio` is greater than 0.5, according to the posterior density, is:
 
-$\mathbb{P}(\textit{humanInformedRatio} > 0.5 | Y = y_0) = \int_{0.5}^1 f_{\textit{humanInformedRatio}|Y=y_0}(x)dx,$
+$$\mathbb{P}(\textit{humanInformedRatio} > 0.5 | Y = y_0) = \int_{0.5}^1 f_{\textit{humanInformedRatio}|Y=y_0}(x)dx ,$$
 
 where $y_0$ is the observed sequence of number of rescues. This can be approximated with the weighted sample that we got from ABC by:
 
-$\mathbb{P}(\textit{humanInformedRatio} > 0.5 | Y = y_0) \approx \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \textbf{1}_{[0.5,1]}(\textit{humanInformedRatio}_i)$
+$$\mathbb{P}(\textit{humanInformedRatio} > 0.5 | Y = y_0) \approx \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \textbf{1}_{[0.5,1]}(\textit{humanInformedRatio}_i) .$$
 
 Where $w_i$ is the weight associated to the $i$-th sample point, $\textbf{1}$ is the indicator function ($\textbf{1}_{[0.5, 1]}(\textit{x}) = 1$ if $\textit{x} \in [0.5,1]$, $0$ otherwise), $\textit{humanInformedRatio}_i$ is the value of the parameter `humanInformedRatio` of the  $i$-th sample point.
 
 Similarly, the probability that `humanInformedRatio` was less than 0.5 is approximated by:
 
-$\mathbb{P}(\textit{humanInformedRatio} < 0.5 | Y = y_0) \approx \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \textbf{1}_{[0,0.5]}(\textit{humanInformedRatio}_i)$
+$$\mathbb{P}(\textit{humanInformedRatio} < 0.5 | Y = y_0) \approx \frac{1}{\sum_{i=1}^n w_i} \sum_{i=1}^n w_i \textbf{1}_{[0,0.5]}(\textit{humanInformedRatio}_i) .$$
 
 **Practice:** We ran ABC with the settings used [previously](#practice-exploiting-abcs-output). Use the posterior sample in [this file](samples/step872.csv) and your favorite scripting language to compute the ratio $\frac{\mathbb{P}(\textit{humanInformedRatio} > 0.5 | Y = y_0)}
 {\mathbb{P}(\textit{humanInformedRatio} < 0.5 | Y = y_0)}$.
@@ -218,7 +218,7 @@ We can make predictions consistent with our inference's uncertainty using the po
 
 For example, the expected value of the predicted total number of people rescued during an attack according to the inferred model is approximated by
 
-$\mathbb{E}[\textit{totalRescued}|Y=y] = \sum_{i=1}^n \frac{w_i}{\sum_{j=1}^n w_j} \textit{totalRescued}_i$
+$$\mathbb{E}[\textit{totalRescued}|Y=y] = \sum_{i=1}^n \frac{w_i}{\sum_{j=1}^n w_j} \textit{totalRescued}_i ,$$
 
 Where $\textit{totalRescued}_i$ is the total number of people rescued for the simulation run corresponding to the $i$-th posterior sample point, and $w_i$ is the associated weight.
 
