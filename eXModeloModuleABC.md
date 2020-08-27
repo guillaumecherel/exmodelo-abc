@@ -41,8 +41,7 @@ A high degree of confidence can be translated as a narrow distribution, peaked a
 
 Such density functions will describe *prior* and *posterior* beliefs about the parameters, i.e. respectively beliefs we have about them before observing any data and beliefs updated with data and the model. We call them respectively *prior density* and *posterior density*. The former is generally constructed by hand to reflect our state of belief based on prior data or theoretical knowledge. The latter is the result of ABC. For example, the posterior density on the parameter `humanInformProbability` given a `proportionInfected` equal to $a$ will be denoted with a conditional density function like 
 
-$f_{\texttt{humanInformProbability} | \texttt{proportionInfected} = a}:[0,1] \rightarrow \mathbb{R}_+$.
-
+$$f_{\texttt{humanInformProbability} | \texttt{proportionInfected} = a}:[0,1] \rightarrow \mathbb{R}_+ .$$
 
 The model zombie takes 3 parameters (`humanInformedRatio`, `humanInformProbability` and `humanFollowProbability`) and outputs multiple values (these will depend on the case study). For simplicity, we will abstract over the parameters and output values by representing them respectively with the random variables $\Theta$ and $Y$, both being multidimensional real-valued. The lowercase letter $\theta, y$ will refer to individual realizations. With this notation, the prior and posterior density are written $f_\Theta$ and $f_{\Theta|Y = y_0}$, where $y_0$ denotes the observed data.
 
@@ -52,7 +51,7 @@ Updating beliefs with data and a simulation model
 
 We want to use prior beliefs over parameter values, observed data and the model to refine our beliefs and obtain the posterior density on the parameters. According to Bayes formula, the posterior density is proportional to the prior density times another term called the likelihood:
 
-$f_{\Theta | Y = y_0}(\theta) \propto f_{Y| \Theta = \theta}(y_0) f_\Theta(\theta).$
+$$f_{\Theta | Y = y_0}(\theta) \propto f_{Y| \Theta = \theta}(y_0) f_\Theta(\theta).$$
 
 The prior distribution term is $f_\Theta(\theta)$. It is usually constructed by hand to reflect our subjective state of knowledge over the parameter. Often, we assume no prior knowledge by using a uniform distribution over a reasonnable range of values. That range must be chosen carefully, since any parameter value outside of it --- where the prior density is 0 --- will also have a posterior density equal to 0, even if the data may suggest otherwise. 
 
