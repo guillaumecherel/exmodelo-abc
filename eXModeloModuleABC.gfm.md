@@ -89,7 +89,7 @@ Using ABC, we try to characterize beliefs in the values that can take
 the parameters. We can describe those beliefs with a probability
 distribution: the most probable values will be associated with higher
 probabilities. For example, consider the parameter
-`humanInformProbability`. It is real valued in the interval $[0,1]$, a
+`humanInformProbability`. It is real valued in the interval $`[0,1]`$, a
 probability distribution describing our belief about it is characterized
 by a density function which we write
 
