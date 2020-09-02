@@ -20,7 +20,7 @@ Because of that, the calibration result is also uncertain. If our data contains 
 
 Uncertainty is a valuable information when making scientific statements. It helps us avoid making misleading claims, for example, when estimating parameter values or forecasting. For example, when estimating a parameter like `humanInformProbability` that takes values between 0 and 1, we can convey the degree of uncertainty by giving an interval of values within which we believe the value lies. To say that it lies between 0.5 and 0.6 is very different from saying it lies between 0.2 and 0.9. We are not likely to draw the same conclusions nor to take the same decisions based on one or the other.
 
-Calibrating a model using ABC allows us to be explicit about how uncertain or confident we are about our conclusions. It estimates a probability distribution describing the belief in the different parameter values to fit the data. Before observing any data, we may or may not already have some ideas about which parameter values are more likely than others. Data can contradict or confirm them. This is the general scheme of approximate Bayesinan computation (ABC), and more generally Bayesian inference: state initial beliefs about parameter values and update them with data and a model.
+Calibrating a model using ABC allows us to be explicit about how uncertain or confident we are about our conclusions. It estimates a probability distribution describing the belief in the different parameter values to fit the data. Before observing any data, we may or may not already have some ideas about which parameter values are more likely than others. Data can contradict or confirm them. This is the general scheme of approximate Bayesian computation (ABC), and more generally Bayesian inference: state initial beliefs about parameter values and update them with data and a model.
 
 
 
@@ -95,9 +95,15 @@ Open this file. Each row is a sample point. There is a column for each parameter
 
 Use your favorite method to make a scatter plot of the posterior sample, taking the parameters two by two. Recall that you can do it in only a few clicks in openmole, if you click on the button "Plot" above the current table. Which parameter values seem the most credible, given the data? 
 
-Remember the model zombies with the 3 parameters `humanInformedRatio`, `humanInformProbability` and `humanFollowProbability`. Write an openmole script that runs ABC on it. Use as observed data the time series of people rescued every 20 seconds: `Array(0,5,14,42,36,9,5,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)`
+Remember the zombie model with the 3 parameters `humanInformedRatio`, `humanInformProbability` and `humanFollowProbability`. Using as an example the `abc.oms` script you've just executed, write an openmole script that runs ABC on the zombie model. Use as observed data the time series of people rescued every 20 seconds: `Array(0,5,14,42,36,9,5,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)`
+
+You don't have to run your script until the end. Running ABC on this model takes
+a long time. You may just start the run to make sure that it compiles and starts
+working, but you can then interrupt the computation. The results are provided in
+the next section.
 
 The solution is available [here](openmole/abc_practice_solution.oms).
+
 
 
 Practice: Exploiting ABC's output
